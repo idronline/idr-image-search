@@ -47,7 +47,8 @@ init_login(app, NAV_ACTIVE, local_ok=("api_reload_index",))
 
 ALLOWED_EXTENSIONS  = {"jpg", "jpeg", "png", "webp", "gif"}
 PHASH_THRESHOLD     = 10   # Hamming distance — exact/near-exact
-SSCD_THRESHOLD      = 0.85 # Cosine similarity — vetted to give ~0 FP
+SSCD_THRESHOLD      = 0.70 # Cosine similarity — heavy crops score ~0.75, unrelated images < 0.2
+SSCD_SURE           = 0.85 # below this a match is shown as "Possible match" for a person to check
 
 USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -143,7 +144,8 @@ def sscd_search(img: Image.Image, threshold: float) -> list[dict]:
             "image_url":  r["image_url"],
             "similarity": round(r["similarity"] * 100),  # 0.85 → 85%
             "distance":   None,
-            "match_type": "Similar" if r["similarity"] < 0.92 else "Near match",
+            "match_type": ("Possible match – please check" if r["similarity"] < SSCD_SURE
+                           else "Similar" if r["similarity"] < 0.92 else "Near match"),
             "stage":      "sscd",
         })
     return results

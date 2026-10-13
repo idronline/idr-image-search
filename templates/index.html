@@ -31,6 +31,7 @@
     .tag{display:inline-block;font-size:.72rem;font-weight:700;border-radius:999px;padding:.12rem .55rem;background:var(--light-grey)}
     .tag.exact{background:var(--green);color:var(--white)}
     .tag.near{background:var(--pale-green);color:#127a54}
+    .tag.possible{background:var(--pale-yellow);color:#7a5a00}
     .match-score{text-align:right;flex:none}
     .match-score b{display:block;font-size:1.2rem}
     .match-score span{font-size:.72rem;color:var(--dark-grey)}
@@ -179,7 +180,7 @@
     }
 
     function tag(r) {
-      var cls = r.distance === 0 ? 'exact' : (r.match_type === 'Near match' ? 'near' : '');
+      var cls = r.distance === 0 ? 'exact' : r.match_type === 'Near match' ? 'near' : r.match_type.indexOf('Possible') === 0 ? 'possible' : '';
       return '<span class="tag ' + cls + '">' + esc(r.match_type) + '</span>';
     }
     function match(r) {
