@@ -1,0 +1,112 @@
+/* Shared look for the IDR tools (Translate, Audio, Email Collector).
+   The same file is copied into every tool repo - change it in all three. */
+:root{--white:#fff;--light-grey:#F0F0F0;--grey:#C2C2C2;--dark-grey:#6E6E6E;--black:#000;
+      --red:#DF373B;--green:#1BB47C;--pale-green:#F3F8F0;--pale-yellow:#FFF6DD;--pale-red:#FDECEC}
+*{box-sizing:border-box}
+body{margin:0;background:var(--light-grey);color:var(--black);
+     font-family:"Open Sans","Noto Sans Devanagari",-apple-system,"Segoe UI",Roboto,sans-serif;
+     font-size:16px;line-height:1.5}
+a{color:var(--black)}
+
+/* navbar */
+.idr-nav{background:var(--white);border-bottom:1px solid #e4e4e4}
+.idr-nav-inner{max-width:1140px;margin:0 auto;padding:.8rem 16px;display:flex;align-items:center;flex-wrap:wrap;gap:.5rem 2rem}
+.idr-nav-logo img{width:4rem;height:auto;display:block}
+.idr-nav-links{display:flex;flex-wrap:wrap;gap:.5rem 1.75rem}
+.idr-nav-links a{color:var(--black);font-size:.95rem;font-weight:600;text-decoration:none}
+.idr-nav-links a:hover{color:var(--red)}
+.idr-nav-links a.active{color:var(--red);font-weight:700}
+
+/* page */
+main{max-width:620px;margin:0 auto;padding:2.5rem 16px 1rem}
+h1{font-size:1.75rem;font-weight:700;margin:0 0 .35rem;line-height:1.25}
+.lead{color:var(--dark-grey);margin:0 0 1.5rem}
+.card{background:var(--white);border-radius:12px;padding:1.75rem;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card + .card{margin-top:1.25rem}
+.card-note{color:var(--dark-grey);font-size:.9rem;margin:0 0 1rem}
+.step{margin-bottom:1.6rem}
+.step-label{display:flex;align-items:center;gap:.6rem;font-weight:700;margin-bottom:.6rem}
+.num{width:1.6rem;height:1.6rem;border-radius:50%;background:var(--black);color:var(--white);font-size:.85rem;
+     display:inline-flex;align-items:center;justify-content:center;flex:none}
+.hint{color:var(--dark-grey);font-size:.85rem;margin-top:.45rem}
+.field-error{color:var(--red);font-size:.88rem;margin-top:.4rem}
+.hidden{display:none!important}
+
+/* toggle buttons (radio inputs followed by their labels) */
+.toggle{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem}
+.toggle input{position:absolute;opacity:0;pointer-events:none}
+.toggle label{border:1.5px solid var(--grey);border-radius:10px;padding:.8rem 1rem;cursor:pointer;margin:0;transition:.15s}
+.toggle label b{display:block}
+.toggle label span{color:var(--dark-grey);font-size:.82rem}
+.toggle label:hover{border-color:var(--black)}
+.toggle input:checked + label{border-color:var(--black);background:var(--black);color:var(--white)}
+.toggle input:checked + label span{color:#ddd}
+.toggle input:focus-visible + label{outline:2px solid var(--red);outline-offset:2px}
+
+/* dropdown */
+.select{width:100%;appearance:none;-webkit-appearance:none;border:1.5px solid var(--grey);border-radius:10px;
+        padding:.8rem 2.5rem .8rem 1rem;font:inherit;background:var(--white) no-repeat right 1rem center/12px
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23000' stroke-width='1.6'/%3E%3C/svg%3E");
+        cursor:pointer}
+.select:hover,.select:focus{border-color:var(--black);outline:none}
+.select:invalid{color:var(--dark-grey)}
+
+/* file drop zone */
+.drop{position:relative;border:2px dashed var(--grey);border-radius:10px;padding:1.6rem 1rem;text-align:center;
+      cursor:pointer;transition:.15s;display:block;margin:0}
+.drop:hover,.drop.over{border-color:var(--black);background:#fafafa}
+.drop input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.drop:focus-within{outline:2px solid var(--red);outline-offset:2px}
+.drop .big{font-weight:600}
+.drop .small{color:var(--dark-grey);font-size:.85rem}
+.drop .chosen{display:none}
+.drop.has-file{border-style:solid;border-color:var(--green);background:var(--pale-green);text-align:left}
+.drop.has-file .empty{display:none}
+.drop.has-file .chosen{display:flex;gap:.8rem;align-items:center}
+.file-icon{width:2.4rem;height:2.4rem;border-radius:8px;background:var(--green);color:var(--white);font-weight:700;
+           font-size:.7rem;display:flex;align-items:center;justify-content:center;flex:none;text-transform:uppercase}
+.file-name{font-weight:600;word-break:break-all}
+.change{margin-left:auto;font-size:.85rem;text-decoration:underline;flex:none}
+
+/* checkbox */
+.check{display:flex;gap:.6rem;align-items:flex-start;cursor:pointer}
+.check input{width:1.1rem;height:1.1rem;margin-top:.2rem;accent-color:var(--black);flex:none}
+
+/* buttons */
+.btn{display:block;width:100%;border:0;border-radius:10px;padding:.9rem 1rem;font:inherit;font-weight:700;
+     font-size:1.05rem;cursor:pointer;text-align:center;text-decoration:none;transition:.15s}
+.btn-primary{background:var(--black);color:var(--white)}
+.btn-primary:hover{background:var(--red)}
+.btn-primary:disabled{background:var(--grey);cursor:not-allowed}
+.btn-download{background:var(--green);color:var(--white)}
+.btn-download:hover{filter:brightness(.92);color:var(--white)}
+.submit-hint{text-align:center}
+
+/* working */
+.working{display:flex;gap:1rem;align-items:center}
+.spinner{width:2.2rem;height:2.2rem;border:3px solid var(--light-grey);border-top-color:var(--black);border-radius:50%;
+         animation:spin 1s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.timer{font-variant-numeric:tabular-nums;color:var(--dark-grey)}
+
+/* result */
+.done-head{display:flex;gap:.8rem;align-items:center;margin-bottom:1.1rem}
+.tick{width:2.4rem;height:2.4rem;border-radius:50%;background:var(--green);color:var(--white);font-size:1.3rem;
+      display:flex;align-items:center;justify-content:center;flex:none}
+.tick.bad{background:var(--red)}
+.done-head h2{font-size:1.25rem;margin:0;line-height:1.3}
+.done-head p{margin:0;color:var(--dark-grey);font-size:.9rem;word-break:break-word}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:.6rem;margin:1.1rem 0}
+.stat{background:var(--light-grey);border-radius:8px;padding:.7rem;text-align:center}
+.stat b{display:block;font-size:1.3rem}
+.stat span{font-size:.78rem;color:var(--dark-grey)}
+.warn{background:var(--pale-yellow);border-radius:8px;padding:.7rem .9rem;font-size:.88rem;margin-bottom:1rem}
+.warn ul{margin:.3rem 0 0;padding-left:1.1rem}
+.error-card{border-left:4px solid var(--red)}
+.error-card pre{white-space:pre-wrap;font-size:.75rem;margin:.5rem 0 0}
+audio{width:100%;margin-bottom:1rem}
+details summary{cursor:pointer;color:var(--dark-grey);font-size:.9rem}
+details a{display:block;font-size:.9rem;margin:.35rem 0 0 .9rem}
+
+footer{text-align:center;color:var(--dark-grey);font-size:.82rem;padding:2rem 16px 2.5rem}
+@media (max-width:480px){.card{padding:1.25rem}h1{font-size:1.45rem}}

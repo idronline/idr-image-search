@@ -12,10 +12,11 @@ pHash results show higher confidence; SSCD results show similarity score.
 
 import io
 import os
+import secrets
 
 import imagehash
 import requests
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, Response, jsonify, render_template, request
 from PIL import Image, UnidentifiedImageError
 
 from db_setup import get_conn, init_db
@@ -23,6 +24,34 @@ from faiss_index import load_index, search_index, COSINE_THRESHOLD
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 1024  # 20 MB
+NAV_ACTIVE = "Image Search"
+
+# --- Shared across IDR tools: navbar links and optional login -----------------
+NAV_TOOLS = [
+    ("Translate", "http://tools.idronline.org:5000/"),
+    ("Audio", "http://tools.idronline.org:5001/"),
+    ("Email Collector", "http://tools.idronline.org:5002/"),
+    ("Image Search", "http://api.idronline.org:5000/"),
+]
+
+
+@app.context_processor
+def inject_nav():
+    return {"nav_tools": NAV_TOOLS, "nav_active": NAV_ACTIVE}
+
+
+@app.before_request
+def require_login():
+    """HTTP basic auth when APP_USERNAME and APP_PASSWORD are set (same values for every tool)."""
+    user, pw = os.environ.get("APP_USERNAME"), os.environ.get("APP_PASSWORD")
+    if not user or not pw:
+        return None
+    auth = request.authorization
+    if auth and secrets.compare_digest(auth.username or "", user) \
+            and secrets.compare_digest(auth.password or "", pw):
+        return None
+    return Response("Login required", 401, {"WWW-Authenticate": 'Basic realm="IDR tools"'})
+
 
 ALLOWED_EXTENSIONS  = {"jpg", "jpeg", "png", "webp", "gif"}
 PHASH_THRESHOLD     = 10   # Hamming distance — exact/near-exact

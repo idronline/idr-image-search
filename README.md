@@ -5,6 +5,30 @@ Fully self-hosted, no external APIs, open source only.
 
 ---
 
+## What is (and is not) in this repo
+
+Only code is in git. These live on the server only (see `.gitignore`):
+
+| Folder | What | How to get it back |
+|---|---|---|
+| `venv/` | Python environment | `python3 -m venv venv && venv/bin/pip install -r requirements-lock.txt --extra-index-url https://download.pytorch.org/whl/cpu` |
+| `models/` | SSCD model weights (~95 MB) | Downloaded automatically on first start (`sscd_model.py`) |
+| `db/` | `images.db` (hashes, embeddings, articles) + FAISS index | Rebuilt by running `indexer.py` over the CSVs (takes hours) |
+| `data/` | CSV exports from WordPress | Export again from the site |
+| `logs/` | Indexer logs | Created automatically |
+
+`requirements-lock.txt` is the exact package list from the server (`pip freeze`);
+`requirements.txt` is the original short list.
+
+## Shared IDR tools look
+
+`templates/_nav.html`, `static/idr-tools.css` and `static/idr-tools.js` are the same files
+as in the Translate, Audio and Email Collector repos. Change them in all four.
+Set `APP_USERNAME` and `APP_PASSWORD` in the environment to require the same browser login
+as the other tools (off when unset).
+
+---
+
 ## Requirements
 
 - Python 3.10+
