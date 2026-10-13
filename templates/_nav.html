@@ -7,5 +7,6 @@
         <a href="{{ url }}"{% if name == nav_active %} class="active" aria-current="page"{% endif %}>{{ name }}</a>
       {% endfor %}
     </div>
+    {% if login_enabled %}<a class="idr-nav-signout" href="{{ logout_url }}">Sign out</a>{% endif %}
   </div>
 </nav>

@@ -17,6 +17,7 @@ import secrets
 import imagehash
 import requests
 from flask import Flask, Response, jsonify, render_template, request
+from idr_login import init_login
 from PIL import Image, UnidentifiedImageError
 
 from db_setup import get_conn, init_db
@@ -28,10 +29,10 @@ NAV_ACTIVE = "Image Search"
 
 # --- Shared across IDR tools: navbar links and optional login -----------------
 NAV_TOOLS = [
-    ("Translate", "http://tools.idronline.org:5000/"),
-    ("Audio", "http://tools.idronline.org:5001/"),
-    ("Email Collector", "http://tools.idronline.org:5002/"),
-    ("Image Search", "http://api.idronline.org:5000/"),
+    ("Translate", "https://tools.idronline.org/translate/"),
+    ("Audio", "https://tools.idronline.org/audio/"),
+    ("Email Collector", "https://tools.idronline.org/emails/"),
+    ("Image Search", "https://api.idronline.org/image-search/"),
 ]
 
 
@@ -40,17 +41,8 @@ def inject_nav():
     return {"nav_tools": NAV_TOOLS, "nav_active": NAV_ACTIVE}
 
 
-@app.before_request
-def require_login():
-    """HTTP basic auth when APP_USERNAME and APP_PASSWORD are set (same values for every tool)."""
-    user, pw = os.environ.get("APP_USERNAME"), os.environ.get("APP_PASSWORD")
-    if not user or not pw:
-        return None
-    auth = request.authorization
-    if auth and secrets.compare_digest(auth.username or "", user) \
-            and secrets.compare_digest(auth.password or "", pw):
-        return None
-    return Response("Login required", 401, {"WWW-Authenticate": 'Basic realm="IDR tools"'})
+# Login page (APP_USERNAME / APP_PASSWORD) and running under a path behind nginx
+init_login(app, NAV_ACTIVE, local_ok=("api_reload_index",))
 
 
 ALLOWED_EXTENSIONS  = {"jpg", "jpeg", "png", "webp", "gif"}
@@ -295,4 +287,4 @@ def api_reload_index():
 
 if __name__ == "__main__":
     init_db()
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host=os.environ.get("BIND_HOST", "0.0.0.0"), port=5000, debug=False)

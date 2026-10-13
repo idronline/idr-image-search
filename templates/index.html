@@ -137,7 +137,7 @@
       return Math.floor(s / 86400) + ' days ago';
     }
     function pollStatus() {
-      fetch('/api/status').then(function (r) { return r.json(); }).then(function (d) {
+      fetch('api/status').then(function (r) { return r.json(); }).then(function (d) {
         var dot = $('statusDot'), text = $('statusText');
         var pct = Math.min(d.percent_embedded || 0, d.percent_hashed || 0);
         var total = d.total_indexed || d.total_hashed || 0, n = total.toLocaleString();
@@ -204,9 +204,10 @@
       if (mode() === 'upload') fd.append('file', fileInput.files[0]); else fd.append('url', urlInput.value.trim());
       $('results').classList.add('hidden'); $('results').classList.remove('error-card');
       working(true);
-      fetch('/api/search', { method: 'POST', body: fd })
+      fetch('api/search', { method: 'POST', body: fd })
         .then(function (resp) {
           if (resp.status === 413) throw new Error('That image is larger than 20 MB.');
+          if (resp.status === 401) { location.reload(); throw new Error('Please sign in again.'); }
           return resp.json().then(function (d) { if (!resp.ok) throw new Error(d.error || 'Something went wrong.'); return d; });
         })
         .then(function (d) {

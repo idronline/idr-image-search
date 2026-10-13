@@ -16,6 +16,8 @@ a{color:var(--black)}
 .idr-nav-links a{color:var(--black);font-size:.95rem;font-weight:600;text-decoration:none}
 .idr-nav-links a:hover{color:var(--red)}
 .idr-nav-links a.active{color:var(--red);font-weight:700}
+.idr-nav-signout{margin-left:auto;font-size:.88rem;color:var(--dark-grey);text-decoration:none}
+.idr-nav-signout:hover{color:var(--red)}
 
 /* page */
 main{max-width:620px;margin:0 auto;padding:2.5rem 16px 1rem}
@@ -50,6 +52,10 @@ h1{font-size:1.75rem;font-weight:700;margin:0 0 .35rem;line-height:1.25}
         cursor:pointer}
 .select:hover,.select:focus{border-color:var(--black);outline:none}
 .select:invalid{color:var(--dark-grey)}
+
+/* text input */
+.input{width:100%;border:1.5px solid var(--grey);border-radius:10px;padding:.8rem 1rem;font:inherit;background:var(--white)}
+.input:hover,.input:focus{border-color:var(--black);outline:none}
 
 /* file drop zone */
 .drop{position:relative;border:2px dashed var(--grey);border-radius:10px;padding:1.6rem 1rem;text-align:center;

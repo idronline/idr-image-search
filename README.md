@@ -24,8 +24,10 @@ Only code is in git. These live on the server only (see `.gitignore`):
 
 `templates/_nav.html`, `static/idr-tools.css` and `static/idr-tools.js` are the same files
 as in the Translate, Audio and Email Collector repos. Change them in all four.
-Set `APP_USERNAME` and `APP_PASSWORD` in the environment to require the same browser login
-as the other tools (off when unset).
+Set `APP_USERNAME`, `APP_PASSWORD` and `SECRET_KEY` in the environment to require the shared
+IDR tools login page (`idr_login.py`, off when unset). In production the app listens on
+127.0.0.1 (`BIND_HOST`) behind nginx at `https://api.idronline.org/image-search/`
+(`deploy/nginx-image-search.conf`).
 
 ---
 

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Sign in · IDR Tools</title>
+    <link rel="icon" href="https://idronline.org/wp-content/uploads/2021/06/cropped-idr-logo-without-tagline-sm-150x104.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&family=Open+Sans:wght@400;600;700&display=swap">
+    <link rel="stylesheet" href="{{ url_for('static', filename='idr-tools.css') }}">
+  </head>
+  <body>
+    {% include "_nav.html" %}
+    <main style="max-width:440px">
+      <h1>Sign in</h1>
+      <p class="lead">IDR internal tools. One sign-in works for every tool on this server.</p>
+      <form class="card" method="post" action="{{ url_for('idr_login') }}">
+        <input type="hidden" name="next" value="{{ next }}">
+        {% if error %}<div class="warn" style="background:var(--pale-red)">{{ error }}</div>{% endif %}
+        <div class="step">
+          <label class="step-label" for="username" style="margin-bottom:.4rem">Username</label>
+          <input class="input" id="username" name="username" value="{{ username }}" autocomplete="username" required
+                 {% if not username %}autofocus{% endif %}>
+        </div>
+        <div class="step">
+          <label class="step-label" for="password" style="margin-bottom:.4rem">Password</label>
+          <input class="input" id="password" name="password" type="password" autocomplete="current-password" required
+                 {% if username %}autofocus{% endif %}>
+        </div>
+        <button type="submit" class="btn btn-primary">Sign in</button>
+      </form>
+    </main>
+    <footer>IDR internal tools &middot; Need help? Contact Subhash</footer>
+  </body>
+</html>
