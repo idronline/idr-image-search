@@ -160,6 +160,24 @@ venv/bin/python weekly_update.py --only Hindi-GU.csv
 
 ---
 
+## Backups of db/
+
+`backup_db.py` runs at the start of every weekly refresh (before the indexer changes
+anything) and can be run by hand. It writes `backups/images-db-YYYY-MM-DD.tar.gz`
+(SQLite copy made with SQLite's backup API + FAISS index), keeps the newest 4, and - when
+`BACKUP_S3_BUCKET` is set in `~/idr-tools.env` - uploads it to
+`s3://<bucket>/idr-image-search/` using the server's IAM role (needs `pip install boto3`).
+
+Restore:
+```bash
+sudo systemctl stop idr-image-search
+aws s3 cp s3://<bucket>/idr-image-search/images-db-YYYY-MM-DD.tar.gz backups/   # if not on the server
+tar -xzf backups/images-db-YYYY-MM-DD.tar.gz -C db/
+sudo systemctl start idr-image-search
+```
+
+---
+
 ## How similarity works
 
 The tool uses **perceptual hashing (pHash)**. Every image gets a 64-bit
