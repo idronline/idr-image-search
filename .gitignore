@@ -1,0 +1,10 @@
+# Large, generated or server-only - never commit
+venv/
+models/
+db/
+data/
+logs/
+__pycache__/
+*.pyc
+*.log
+.env

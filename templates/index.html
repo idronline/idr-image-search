@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image Search — IDR Internal Tool</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f4f0;
+      min-height: 100vh;
+      color: #1a1a2e;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: #1a1a2e;
+      padding: 0 32px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .logo-mark {
+      background: #E8192C;
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 3px;
+      letter-spacing: 0.5px;
+    }
+    .logo-text { color: rgba(255,255,255,0.8); font-size: 13px; }
+    .divider-v { width: 1px; height: 20px; background: rgba(255,255,255,0.15); }
+    .tool-name { color: rgba(255,255,255,0.45); font-size: 12px; letter-spacing: 0.4px; }
+
+    /* ── Status bar ── */
+    .status-bar {
+      background: white;
+      border-bottom: 1px solid #e8e7e3;
+      padding: 10px 32px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 12px;
+    }
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #E8192C;
+      flex-shrink: 0;
+      transition: background 0.5s;
+    }
+    .status-dot.done   { background: #639922; }
+    .status-dot.idle   { background: #aaa; }
+    .status-label      { color: #666; flex: 1; }
+    .status-label strong { color: #1a1a2e; font-weight: 500; }
+    .progress-track {
+      width: 160px; height: 4px;
+      background: #e8e7e3;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .progress-fill {
+      height: 100%; background: #E8192C;
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.8s ease;
+    }
+    .progress-fill.done { background: #639922; }
+    .status-count { color: #1a1a2e; font-weight: 500; white-space: nowrap; }
+
+    /* ── Layout ── */
+    .container { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+
+    /* ── Search card ── */
+    .card {
+      background: white;
+      border-radius: 10px;
+      border: 1px solid #e8e7e3;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .card-body { padding: 24px; }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #e8e7e3;
+      margin: 0 24px;
+    }
+    .tab {
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #888;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      user-select: none;
+      transition: color 0.15s;
+    }
+    .tab:hover { color: #1a1a2e; }
+    .tab.active { color: #E8192C; border-bottom-color: #E8192C; font-weight: 500; }
+
+    /* ── Upload zone ── */
+    .upload-zone {
+      border: 1.5px dashed #d0cfcb;
+      border-radius: 8px;
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      position: relative;
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: #E8192C;
+      background: #fff5f5;
+    }
+    .upload-zone input[type=file] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .upload-icon { margin: 0 auto 12px; color: #ccc; }
+    .upload-title { font-size: 14px; font-weight: 500; color: #1a1a2e; margin-bottom: 4px; }
+    .upload-title span { color: #E8192C; }
+    .upload-sub { font-size: 12px; color: #999; }
+    .upload-preview {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0 4px;
+    }
+    .upload-preview.show { display: flex; }
+    .preview-thumb {
+      width: 56px; height: 56px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid #e8e7e3;
+    }
+    .preview-name { font-size: 13px; color: #1a1a2e; }
+    .preview-clear {
+      margin-left: auto;
+      font-size: 12px;
+      color: #E8192C;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+
+    /* ── URL panel ── */
+    .url-row { display: flex; gap: 8px; }
+    .url-input {
+      flex: 1;
+      height: 40px;
+      border: 1px solid #d0cfcb;
+      border-radius: 6px;
+      padding: 0 12px;
+      font-size: 13px;
+      color: #1a1a2e;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .url-input:focus { border-color: #E8192C; box-shadow: 0 0 0 3px rgba(232,25,44,0.08); }
+    .url-input::placeholder { color: #bbb; }
+
+    /* ── Search button ── */
+    .btn-search {
+      height: 40px;
+      padding: 0 22px;
+      background: #E8192C;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn-search:hover   { opacity: 0.88; }
+    .btn-search:active  { transform: scale(0.98); }
+    .btn-search:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Threshold slider ── */
+    .threshold-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #f0efe9;
+    }
+    .threshold-label { font-size: 12px; color: #888; white-space: nowrap; }
+    .threshold-row input[type=range] {
+      flex: 1;
+      accent-color: #E8192C;
+    }
+    .threshold-val {
+      font-size: 12px;
+      font-weight: 500;
+      color: #1a1a2e;
+      min-width: 110px;
+      text-align: right;
+    }
+
+    /* ── Notice ── */
+    .index-notice {
+      font-size: 11px;
+      color: #E8192C;
+      background: #fff5f5;
+      border: 1px solid #ffd0d4;
+      border-radius: 5px;
+      padding: 7px 12px;
+      margin-top: 14px;
+    }
+    .index-notice.done { display: none; }
+
+    /* ── Results ── */
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .results-title { font-size: 14px; font-weight: 500; color: #1a1a2e; }
+    .results-badge {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: 99px;
+    }
+    .badge-match    { background: #fff0f1; color: #E8192C; }
+    .badge-none     { background: #f0efe9; color: #888; }
+    .badge-loading  { background: #f0efe9; color: #888; }
+
+    .result-card {
+      display: flex;
+      gap: 14px;
+      padding: 14px;
+      border: 1px solid #e8e7e3;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      align-items: flex-start;
+      transition: border-color 0.15s;
+    }
+    .result-card:hover { border-color: #d0cfcb; }
+
+    .result-thumb {
+      width: 72px; height: 72px;
+      border-radius: 6px;
+      object-fit: cover;
+      background: #f0efe9;
+      flex-shrink: 0;
+      border: 1px solid #e8e7e3;
+    }
+    .result-thumb-placeholder {
+      width: 72px; height: 72px;
+      border-radius: 6px;
+      background: #f0efe9;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ccc;
+      font-size: 24px;
+    }
+
+    .result-body { flex: 1; min-width: 0; }
+    .result-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: #1a1a2e;
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .result-meta  { font-size: 11px; color: #888; margin-bottom: 8px; }
+    .result-tags  { display: flex; gap: 6px; flex-wrap: wrap; }
+    .result-link  {
+      font-size: 11px;
+      color: #E8192C;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 6px;
+    }
+    .result-link:hover { text-decoration: underline; }
+    .tag {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: #f5f4f0;
+      color: #666;
+      border: 1px solid #e8e7e3;
+    }
+    .tag-exact  { background: #eaf3de; color: #3B6D11; border-color: #c0dd97; }
+    .tag-near   { background: #faeeda; color: #633806; border-color: #FAC775; }
+    .tag-sim    { background: #f5f4f0; color: #666;    border-color: #e8e7e3; }
+
+    .result-score { flex-shrink: 0; text-align: right; }
+    .score-val   { font-size: 20px; font-weight: 600; color: #E8192C; display: block; line-height: 1.2; }
+    .score-label { font-size: 10px; color: #aaa; }
+
+    /* ── Multi-article expansion ── */
+    .more-articles {
+      font-size: 11px;
+      color: #888;
+      margin-top: 4px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      text-decoration: underline dotted;
+    }
+
+    /* ── Empty/loading states ── */
+    .state-empty {
+      text-align: center;
+      padding: 36px 0;
+      color: #bbb;
+      font-size: 13px;
+    }
+    .state-empty svg { margin: 0 auto 10px; display: block; opacity: 0.3; }
+
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid #e8e7e3;
+      border-top-color: #E8192C;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="header">
+  <div class="header-left">
+    <span class="logo-mark">IDR</span>
+    <span class="logo-text">India Development Review</span>
+    <div class="divider-v"></div>
+    <span class="tool-name">Image Search · Internal Tool</span>
+  </div>
+</header>
+
+<!-- ── Status bar ── -->
+<div class="status-bar" id="status-bar">
+  <div class="status-dot" id="status-dot"></div>
+  <span class="status-label" id="status-label">Loading index status…</span>
+  <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+  <span class="status-count" id="status-count"></span>
+</div>
+
+<!-- ── Main ── -->
+<div class="container">
+
+  <!-- Search card -->
+  <div class="card">
+    <div class="tabs">
+      <div class="tab active" id="tab-upload" onclick="switchTab('upload')">Upload image</div>
+      <div class="tab"        id="tab-url"    onclick="switchTab('url')">Paste URL</div>
+    </div>
+    <div class="card-body">
+
+      <!-- Upload panel -->
+      <div id="panel-upload">
+        <div class="upload-zone" id="drop-zone">
+          <input type="file" id="file-input" accept=".jpg,.jpeg,.png,.webp,.gif" />
+          <svg class="upload-icon" width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="8" width="32" height="24" rx="3" stroke="currentColor" stroke-width="1.5" fill="none"/>
+            <circle cx="14" cy="17" r="3.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+            <path d="M4 26l9-8 7 7 5-5 11 9" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" fill="none"/>
+            <path d="M26 4v10M23 7l3-3 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <div class="upload-title">Drop image here or <span>browse</span></div>
+          <div class="upload-sub">JPG, PNG, WebP · Max 20 MB</div>
+        </div>
+        <div class="upload-preview" id="upload-preview">
+          <img id="preview-thumb" class="preview-thumb" src="" alt="" />
+          <span id="preview-name" class="preview-name"></span>
+          <button class="preview-clear" onclick="clearFile()">Remove</button>
+        </div>
+        <div class="threshold-row">
+          <span class="threshold-label">Similarity strictness</span>
+          <input type="range" min="0" max="20" value="10" id="thresh-upload" oninput="updateThresh('upload')" />
+          <span class="threshold-val" id="thresh-upload-out">Balanced (≤ 10)</span>
+        </div>
+        <div class="index-notice" id="notice-upload">Index is loading… results will grow as indexing continues.</div>
+        <div style="margin-top:16px;">
+          <button class="btn-search" id="btn-upload" onclick="doSearch('upload')" disabled>Search</button>
+        </div>
+      </div>
+
+      <!-- URL panel -->
+      <div id="panel-url" style="display:none;">
+        <div class="url-row">
+          <input class="url-input" type="text" id="url-input" placeholder="https://idronline.org/wp-content/uploads/…" />
+          <button class="btn-search" id="btn-url" onclick="doSearch('url')">Search</button>
+        </div>
+        <div class="threshold-row">
+          <span class="threshold-label">Similarity strictness</span>
+          <input type="range" min="0" max="20" value="10" id="thresh-url" oninput="updateThresh('url')" />
+          <span class="threshold-val" id="thresh-url-out">Balanced (≤ 10)</span>
+        </div>
+        <div class="index-notice" id="notice-url">Index is loading… results will grow as indexing continues.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Results card -->
+  <div class="card" id="results-card" style="display:none;">
+    <div class="card-body">
+      <div class="results-header">
+        <span class="results-title">Results</span>
+        <span class="results-badge badge-loading" id="results-badge">Searching…</span>
+      </div>
+      <div id="results-list">
+        <div class="state-empty"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Threshold slider labels ────────────────────────────────────────────────
+const THRESH_LABELS = [
+  [0,  'Exact only (= 0)'],
+  [3,  'Very strict (≤ 3)'],
+  [5,  'Strict (≤ 5)'],
+  [8,  'Balanced (≤ 8)'],
+  [10, 'Balanced (≤ 10)'],
+  [13, 'Lenient (≤ 13)'],
+  [15, 'Lenient (≤ 15)'],
+  [18, 'Very lenient (≤ 18)'],
+  [20, 'Loose (≤ 20)'],
+];
+
+function updateThresh(panel) {
+  const v   = parseInt(document.getElementById('thresh-' + panel).value);
+  const lbl = THRESH_LABELS.reduce((a, b) => Math.abs(b[0] - v) < Math.abs(a[0] - v) ? b : a)[1];
+  document.getElementById('thresh-' + panel + '-out').textContent = lbl;
+}
+
+// ── Tab switching ─────────────────────────────────────────────────────────
+function switchTab(t) {
+  document.getElementById('tab-upload').classList.toggle('active', t === 'upload');
+  document.getElementById('tab-url').classList.toggle('active', t === 'url');
+  document.getElementById('panel-upload').style.display = t === 'upload' ? 'block' : 'none';
+  document.getElementById('panel-url').style.display    = t === 'url'    ? 'block' : 'none';
+}
+
+// ── File input ─────────────────────────────────────────────────────────────
+let selectedFile = null;
+
+document.getElementById('file-input').addEventListener('change', function() {
+  if (this.files && this.files[0]) selectFile(this.files[0]);
+});
+
+const dropZone = document.getElementById('drop-zone');
+dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) selectFile(e.dataTransfer.files[0]);
+});
+
+function selectFile(f) {
+  selectedFile = f;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('preview-thumb').src = ev.target.result;
+    document.getElementById('preview-name').textContent = f.name;
+  };
+  reader.readAsDataURL(f);
+  document.getElementById('upload-preview').classList.add('show');
+  document.getElementById('btn-upload').disabled = false;
+}
+
+function clearFile() {
+  selectedFile = null;
+  document.getElementById('file-input').value = '';
+  document.getElementById('preview-thumb').src = '';
+  document.getElementById('upload-preview').classList.remove('show');
+  document.getElementById('btn-upload').disabled = true;
+}
+
+// ── Search ─────────────────────────────────────────────────────────────────
+async function doSearch(panel) {
+  const threshold = parseInt(document.getElementById('thresh-' + panel).value);
+  const fd = new FormData();
+  fd.append('threshold', threshold);
+
+  if (panel === 'upload') {
+    if (!selectedFile) return;
+    fd.append('file', selectedFile);
+  } else {
+    const url = document.getElementById('url-input').value.trim();
+    if (!url) return;
+    fd.append('url', url);
+  }
+
+  // Show results card with spinner
+  document.getElementById('results-card').style.display = 'block';
+  document.getElementById('results-badge').className = 'results-badge badge-loading';
+  document.getElementById('results-badge').textContent = 'Searching…';
+  document.getElementById('results-list').innerHTML = '<div class="state-empty"><div class="spinner"></div></div>';
+
+  try {
+    const resp = await fetch('/api/search', { method: 'POST', body: fd });
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      document.getElementById('results-badge').textContent = 'Error';
+      document.getElementById('results-list').innerHTML =
+        `<div class="state-empty" style="color:#E8192C;">${data.error || 'Something went wrong.'}</div>`;
+      return;
+    }
+
+    renderResults(data);
+  } catch (err) {
+    document.getElementById('results-badge').textContent = 'Error';
+    document.getElementById('results-list').innerHTML =
+      `<div class="state-empty" style="color:#E8192C;">Network error. Is the server running?</div>`;
+  }
+}
+
+function renderResults(data) {
+  const badge = document.getElementById('results-badge');
+  const list  = document.getElementById('results-list');
+
+  if (data.count === 0) {
+    badge.className = 'results-badge badge-none';
+    badge.textContent = 'No matches found';
+    list.innerHTML = `
+      <div class="state-empty">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <circle cx="18" cy="18" r="11" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M26 26l8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        This image does not appear in the catalogue${data.count === 0 ? ' (within the indexed portion)' : ''}.
+      </div>`;
+    return;
+  }
+
+  badge.className = 'results-badge badge-match';
+  badge.textContent = `${data.count} match${data.count !== 1 ? 'es' : ''} found`;
+
+  list.innerHTML = data.results.map(r => {
+    const art     = r.articles[0] || {};
+    const extra   = r.articles.length > 1 ? r.articles.length - 1 : 0;
+    const tagCls  = r.distance === 0 ? 'tag-exact' : (r.distance <= 5 ? 'tag-near' : 'tag-sim');
+    const csvSrc  = art.csv_source || '';
+    const contrib = art.contributor ? `· ${art.contributor}` : '';
+    const imgTag  = `<img class="result-thumb" src="${escHtml(r.image_url)}"
+                       onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+                       alt="matched image" />
+                     <div class="result-thumb-placeholder" style="display:none;">📷</div>`;
+
+    return `
+      <div class="result-card">
+        ${imgTag}
+        <div class="result-body">
+          <div class="result-title">${escHtml(art.article_title || '(untitled)')}</div>
+          <div class="result-meta">${escHtml(csvSrc)} ${escHtml(contrib)}</div>
+          <div class="result-tags">
+            <span class="tag ${tagCls}">${escHtml(r.label)}</span>
+            ${csvSrc ? `<span class="tag">${escHtml(csvSrc)}</span>` : ''}
+          </div>
+          ${art.permalink
+            ? `<a class="result-link" href="${escHtml(art.permalink)}" target="_blank" rel="noopener">View article →</a>`
+            : ''}
+          ${extra > 0
+            ? `<div class="more-articles">+${extra} more article${extra !== 1 ? 's' : ''} use this image</div>`
+            : ''}
+        </div>
+        <div class="result-score">
+          <span class="score-val">${r.similarity}%</span>
+          <span class="score-label">similarity</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ── Status polling ─────────────────────────────────────────────────────────
+async function pollStatus() {
+  try {
+    const resp = await fetch('/api/status');
+    const d    = await resp.json();
+
+    const dot    = document.getElementById('status-dot');
+    const label  = document.getElementById('status-label');
+    const fill   = document.getElementById('progress-fill');
+    const count  = document.getElementById('status-count');
+    const notices = document.querySelectorAll('.index-notice');
+
+    const indexed    = d.total_indexed    || 0;
+    const discovered = d.total_discovered || 0;
+    const pct        = d.percent          || 0;
+
+    fill.style.width = pct + '%';
+    count.textContent = indexed.toLocaleString() + ' / ~' + (discovered || '?').toLocaleString() + ' indexed';
+
+    if (d.is_running) {
+      dot.className   = 'status-dot';
+      label.innerHTML = `Indexing in progress &middot; <strong>${d.current_csv || ''}</strong>`;
+      fill.className  = 'progress-fill';
+      notices.forEach(n => { n.classList.remove('done'); n.textContent = `Index is ${pct}% complete · results will grow as indexing continues.`; });
+    } else if (indexed > 0 && pct >= 100) {
+      dot.className   = 'status-dot done';
+      label.innerHTML = `Index complete &middot; last updated ${relTime(d.last_updated_at)}`;
+      fill.className  = 'progress-fill done';
+      fill.style.width = '100%';
+      count.textContent = indexed.toLocaleString() + ' images indexed';
+      notices.forEach(n => n.classList.add('done'));
+    } else {
+      dot.className   = 'status-dot idle';
+      label.innerHTML = indexed > 0
+        ? `Index paused &middot; ${pct}% complete`
+        : `Index not started &middot; run indexer.py to begin`;
+      fill.className  = 'progress-fill';
+      notices.forEach(n => { n.classList.remove('done'); });
+    }
+  } catch(e) {
+    document.getElementById('status-label').textContent = 'Could not reach server';
+  }
+}
+
+function relTime(iso) {
+  if (!iso) return 'unknown';
+  const diff = Math.floor((Date.now() - new Date(iso + 'Z')) / 1000);
+  if (diff < 60)   return 'just now';
+  if (diff < 3600) return Math.floor(diff/60) + ' min ago';
+  if (diff < 86400) return Math.floor(diff/3600) + ' hr ago';
+  return Math.floor(diff/86400) + ' days ago';
+}
+
+// Poll every 10 seconds
+pollStatus();
+setInterval(pollStatus, 10000);
+
+// Enter key on URL input
+document.getElementById('url-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch('url');
+});
+</script>
+
+</body>
+</html>
