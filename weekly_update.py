@@ -9,7 +9,8 @@ the ubuntu crontab (Sunday 22:00 India time, see README):
      call its processing URL until the export is complete, then download
      the file into data/<file>. A download only replaces the old CSV if it
      looks valid (header has ID and Image Path, not much smaller than before).
-  2. Back up db/ (backup_db.py) before anything in it changes.
+  2. Back up db/ (backup_db.py) before anything in it changes - only when
+     BACKUP_ENABLED=1 is set (off by default).
   3. Run `indexer.py --embed` (adds only new images: pHash, then SSCD).
   4. Ask the running web app to reload its FAISS index.
 
@@ -158,14 +159,17 @@ def main():
                 failures.append(exp["file"])
                 log.error(f"[{exp['file']}] FAILED: {type(e).__name__}: {e}")
 
-    log.info("Backing up db/ ...")
-    result = subprocess.run([sys.executable, os.path.join(BASE_DIR, "backup_db.py")], cwd=BASE_DIR,
-                            capture_output=True, text=True)
-    for line in (result.stdout + result.stderr).strip().splitlines():
-        log.info(line)
-    if result.returncode != 0:
-        failures.append("backup")
-        log.error("Backup failed - continuing with the update (the indexer only adds data)")
+    if os.environ.get("BACKUP_ENABLED") == "1":
+        log.info("Backing up db/ ...")
+        result = subprocess.run([sys.executable, os.path.join(BASE_DIR, "backup_db.py")], cwd=BASE_DIR,
+                                capture_output=True, text=True)
+        for line in (result.stdout + result.stderr).strip().splitlines():
+            log.info(line)
+        if result.returncode != 0:
+            failures.append("backup")
+            log.error("Backup failed - continuing with the update (the indexer only adds data)")
+    else:
+        log.info("Backup skipped (turn on with BACKUP_ENABLED=1 in ~/idr-tools.env)")
 
     log.info("Running indexer (new images only)...")
     result = subprocess.run([sys.executable, os.path.join(BASE_DIR, "indexer.py"), "--embed"], cwd=BASE_DIR)
