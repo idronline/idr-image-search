@@ -1,0 +1,6 @@
+[
+  {"file": "English-Articles.csv",
+   "trigger":    "https://idronline.org/wp-load.php?export_key=KEY&export_id=48&action=trigger",
+   "processing": "https://idronline.org/wp-load.php?export_key=KEY&export_id=48&action=processing",
+   "download":   "https://idronline.org/wp-load.php?security_token=TOKEN&export_id=48&action=get_data"}
+]

@@ -121,46 +121,36 @@ Keep the app running with systemd or supervisor (see below).
 
 ---
 
-## Cron — automatic nightly re-indexing
+## Running on the server
 
-After the first full index, new CSVs will be dropped into `data/` and
-the cron will pick up only new images (incremental).
+Two systemd units (files in `deploy/`):
 
-Edit crontab:
-```bash
-crontab -e
-```
+| Unit | What |
+|---|---|
+| `idr-image-search.service` | the web app on port 5000, restarts on failure and after reboot |
+| `idr-image-weekly.timer` | every **Saturday 11 pm India time** runs `idr-image-weekly.service` |
 
-Add this line (runs at 2 AM daily):
-```
-0 2 * * * /opt/idr-image-search/venv/bin/python /opt/idr-image-search/indexer.py >> /opt/idr-image-search/logs/cron.log 2>&1
-```
+The weekly run (`weekly_update.py`) replaces the old manual export + scp:
 
----
+1. For each export in `exports.json` (WP All Export cron URLs, **secret - not in git**):
+   trigger it, call its processing URL until it reports complete, download the CSV into `data/`.
+   A download only replaces the old CSV if it has the `ID` and `Image Path` columns and at
+   least 80% of the previous row count; the previous file is kept as `data/<name>.prev`.
+2. `indexer.py --embed` - downloads only new images, hashes and embeds them.
+   It also refreshes article titles, links and contributors from the new CSVs.
+3. Tells the running app to reload the FAISS index (no restart needed).
 
-## Systemd service for the web app
-
-Create `/etc/systemd/system/idr-image-search.service`:
-
-```ini
-[Unit]
-Description=IDR Image Search
-After=network.target
-
-[Service]
-User=www-data
-WorkingDirectory=/opt/idr-image-search
-ExecStart=/opt/idr-image-search/venv/bin/gunicorn -w 2 -b 127.0.0.1:5000 app:app
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-```
+Log: `logs/weekly_update.log` (and `journalctl -u idr-image-weekly`).
 
 ```bash
-systemctl daemon-reload
-systemctl enable idr-image-search
-systemctl start idr-image-search
+sudo cp deploy/*.service deploy/*.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now idr-image-search idr-image-weekly.timer
+systemctl list-timers idr-image-weekly.timer       # shows the next run
+
+sudo systemctl start idr-image-weekly             # run it now, by hand
+venv/bin/python weekly_update.py --no-export      # index the current CSVs only
+venv/bin/python weekly_update.py --only Hindi-GU.csv
 ```
 
 ---

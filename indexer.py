@@ -249,7 +249,8 @@ def load_csv(filepath: str, csv_label: str) -> list[dict]:
                         "article_id":  str(row.get("ID", "")).strip(),
                         "title":       row.get("Title", "").strip(),
                         "permalink":   row.get("Permalink", "").strip(),
-                        "contributor": row.get("Contributor", "").strip(),
+                        # WP All Export names this column "Contributors"
+                        "contributor": (row.get("Contributors") or row.get("Contributor") or "").strip(),
                         "csv_source":  csv_label,
                         "image_urls":  orig_urls,
                     })
@@ -301,14 +302,19 @@ def run_hash_pass():
     todo = [u for u in url_to_articles if u not in already]
     log.info(f"Already hashed: {len(already)} — To process: {len(todo)}")
 
-    # Upsert article associations
+    # Upsert article associations (refreshes title/link/contributor from the latest CSVs)
     for url, arts in url_to_articles.items():
         for art in arts:
             try:
                 conn.execute("""
-                    INSERT OR IGNORE INTO article_images
+                    INSERT INTO article_images
                         (article_id, article_title, permalink, contributor, csv_source, image_url)
                     VALUES (:article_id, :title, :permalink, :contributor, :csv_source, :image_url)
+                    ON CONFLICT(article_id, image_url) DO UPDATE SET
+                        article_title = excluded.article_title,
+                        permalink     = excluded.permalink,
+                        contributor   = excluded.contributor,
+                        csv_source    = excluded.csv_source
                 """, {**art, "image_url": url})
             except sqlite3.Error:
                 pass

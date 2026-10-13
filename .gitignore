@@ -8,3 +8,10 @@ __pycache__/
 *.pyc
 *.log
 .env
+
+# Export URLs contain secret keys (copy exports.example.json to exports.json on the server)
+exports.json
+# Working files of the indexer and weekly update
+indexer.lock
+*.tmp
+*.prev

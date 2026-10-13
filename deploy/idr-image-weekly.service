@@ -1,0 +1,14 @@
+[Unit]
+Description=IDR Image Search weekly update (exports, new images, index reload)
+After=network-online.target idr-image-search.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/idr-image-search
+EnvironmentFile=-/home/ubuntu/idr-tools.env
+ExecStart=/home/ubuntu/idr-image-search/venv/bin/python weekly_update.py
+# Lower priority so searches stay fast while new images are embedded
+Nice=10
+TimeoutStartSec=12h

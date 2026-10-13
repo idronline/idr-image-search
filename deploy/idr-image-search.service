@@ -1,0 +1,14 @@
+[Unit]
+Description=IDR Image Search web app (:5000)
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/idr-image-search
+# Optional: APP_USERNAME / APP_PASSWORD for the shared IDR tools login
+EnvironmentFile=-/home/ubuntu/idr-tools.env
+ExecStart=/home/ubuntu/idr-image-search/venv/bin/python app.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
