@@ -123,12 +123,17 @@ Keep the app running with systemd or supervisor (see below).
 
 ## Running on the server
 
-Two systemd units (files in `deploy/`):
+The web app runs as the systemd service `deploy/idr-image-search.service` (port 5000,
+restarts on failure and after reboot). The weekly refresh runs from the ubuntu user's
+crontab every **Sunday 22:00 India time** (server clock is UTC):
 
-| Unit | What |
-|---|---|
-| `idr-image-search.service` | the web app on port 5000, restarts on failure and after reboot |
-| `idr-image-weekly.timer` | every **Saturday 11 pm India time** runs `idr-image-weekly.service` |
+```
+# Image search weekly refresh: Sunday 22:00 IST = Sunday 16:30 UTC (server clock is UTC)
+30 16 * * 0 cd /home/ubuntu/idr-image-search && { [ -f /home/ubuntu/idr-tools.env ] && set -a && . /home/ubuntu/idr-tools.env && set +a; venv/bin/python weekly_update.py; } >> logs/weekly_cron.log 2>&1
+```
+
+It sits next to the hindisearch refresh (Sunday 00:00 IST) in the same crontab, so the two
+never overlap. `idr-tools.env` only matters when the shared login is on (the reload call needs it).
 
 The weekly run (`weekly_update.py`) replaces the old manual export + scp:
 
@@ -140,15 +145,13 @@ The weekly run (`weekly_update.py`) replaces the old manual export + scp:
    It also refreshes article titles, links and contributors from the new CSVs.
 3. Tells the running app to reload the FAISS index (no restart needed).
 
-Log: `logs/weekly_update.log` (and `journalctl -u idr-image-weekly`).
+Logs: `logs/weekly_update.log` (and cron output in `logs/weekly_cron.log`).
 
 ```bash
-sudo cp deploy/*.service deploy/*.timer /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable --now idr-image-search idr-image-weekly.timer
-systemctl list-timers idr-image-weekly.timer       # shows the next run
+sudo cp deploy/idr-image-search.service /etc/systemd/system/
+sudo systemctl daemon-reload && sudo systemctl enable --now idr-image-search
 
-sudo systemctl start idr-image-weekly             # run it now, by hand
+venv/bin/python weekly_update.py                  # run the weekly refresh now, by hand
 venv/bin/python weekly_update.py --no-export      # index the current CSVs only
 venv/bin/python weekly_update.py --only Hindi-GU.csv
 ```

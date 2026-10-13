@@ -2,8 +2,8 @@
 """
 weekly_update.py — refresh the CSV exports and index new images.
 
-Replaces the manual "export, scp, run indexer" routine. Run by the
-idr-image-weekly systemd timer (Saturday night, India time):
+Replaces the manual "export, scp, run indexer" routine. Run weekly from
+the ubuntu crontab (Sunday 22:00 India time, see README):
 
   1. For each WP All Export export in exports.json: call its trigger URL,
      call its processing URL until the export is complete, then download
