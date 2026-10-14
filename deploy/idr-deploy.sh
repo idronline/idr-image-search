@@ -18,7 +18,8 @@ if [ -z "${IDR_DEPLOY_COPY:-}" ]; then
 fi
 trap 'rm -f "$0"' EXIT
 
-[ -f "$HOME/idr-tools.env" ] && { set -a; . "$HOME/idr-tools.env"; set +a; }
+# set +u while reading: a "$" inside an unquoted value (e.g. a password) must not stop the deploy
+[ -f "$HOME/idr-tools.env" ] && { set +u; set -a; . "$HOME/idr-tools.env"; set +a; set -u; }
 [ $# -gt 0 ] || { echo "usage: $(basename "$0") folder:service:port ..."; exit 2; }
 
 summary=()
