@@ -6,30 +6,34 @@
     <title>Sign in · IDR Tools</title>
     <link rel="icon" href="https://idronline.org/wp-content/uploads/2021/06/cropped-idr-logo-without-tagline-sm-150x104.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&family=Open+Sans:wght@400;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&family=Noto+Serif+Devanagari:wght@700&family=Open+Sans:wght@400;600;700&display=swap">
     <link rel="stylesheet" href="{{ url_for('static', filename='idr-tools.css') }}">
   </head>
   <body>
     {% include "_nav.html" %}
-    <main style="max-width:440px">
-      <h1>Sign in</h1>
-      <p class="lead">IDR internal tools. One sign-in works for every tool on this server.</p>
+    <header class="hero"><div class="idr-wrap" style="max-width:472px">
+      <h1>Sign in<span class="hi" lang="hi">साइन इन करें</span></h1>
+      <p class="lead">One sign-in works for every tool on this server.
+        <span class="hi" lang="hi">एक बार साइन इन करें, इस सर्वर के सभी टूल्स खुल जाएंगे।</span></p>
+    </div></header>
+    <main style="max-width:472px">
       <form class="card" method="post" action="{{ url_for('idr_login') }}">
         <input type="hidden" name="next" value="{{ next }}">
-        {% if error %}<div class="warn" style="background:var(--pale-red)">{{ error }}</div>{% endif %}
+        {% if error %}<div class="warn" style="background:var(--pale-red);border-left-color:var(--red)">{{ error }}</div>{% endif %}
         <div class="step">
-          <label class="step-label" for="username" style="margin-bottom:.4rem">Username</label>
+          <label class="step-label" for="username" style="margin-bottom:.4rem"><span>Username<span class="hi" lang="hi">यूज़रनेम</span></span></label>
           <input class="input" id="username" name="username" value="{{ username }}" autocomplete="username" required
                  {% if not username %}autofocus{% endif %}>
         </div>
         <div class="step">
-          <label class="step-label" for="password" style="margin-bottom:.4rem">Password</label>
+          <label class="step-label" for="password" style="margin-bottom:.4rem"><span>Password<span class="hi" lang="hi">पासवर्ड</span></span></label>
           <input class="input" id="password" name="password" type="password" autocomplete="current-password" required
                  {% if username %}autofocus{% endif %}>
         </div>
-        <button type="submit" class="btn btn-primary">Sign in</button>
+        <button type="submit" class="btn btn-primary">Sign in<span class="hi" lang="hi">साइन इन करें</span></button>
       </form>
     </main>
-    <footer>IDR internal tools &middot; Need help? Contact Subhash</footer>
+    <footer>IDR internal tools &middot; Need help? Contact Subhash
+      <span class="hi" lang="hi">IDR के इंटरनल टूल्स · मदद चाहिए? सुभाष से संपर्क करें</span></footer>
   </body>
 </html>

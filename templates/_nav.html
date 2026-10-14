@@ -1,12 +1,13 @@
 {# Shared IDR tools navbar (same markup in every tool repo; styles in static/idr-tools.css). Needs nav_tools and nav_active from app.py. #}
 <nav class="idr-nav">
-  <div class="idr-nav-inner">
+  <div class="idr-nav-top"><div class="idr-wrap">
     <a class="idr-nav-logo" href="https://idronline.org/"><img src="https://idronline.org/wp-content/uploads/2021/06/cropped-idr-logo-without-tagline-sm.png" alt="India Development Review"></a>
-    <div class="idr-nav-links">
-      {% for name, url in nav_tools %}
-        <a href="{{ url }}"{% if name == nav_active %} class="active" aria-current="page"{% endif %}>{{ name }}</a>
-      {% endfor %}
-    </div>
-    {% if login_enabled %}<a class="idr-nav-signout" href="{{ logout_url }}">Sign out</a>{% endif %}
-  </div>
+    <div class="idr-nav-title">Tools<span class="hi" lang="hi">टूल्स</span></div>
+    {% if login_enabled %}<a class="idr-nav-signout" href="{{ logout_url }}">Sign out<span class="hi" lang="hi">साइन आउट</span></a>{% endif %}
+  </div></div>
+  <div class="idr-nav-strip"><div class="idr-wrap idr-nav-links">
+    {% for name, url in nav_tools %}
+      <a href="{{ url }}"{% if name == nav_active %} class="active" aria-current="page"{% endif %}>{{ name }}</a>
+    {% endfor %}
+  </div></div>
 </nav>

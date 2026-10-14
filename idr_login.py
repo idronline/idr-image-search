@@ -81,7 +81,7 @@ def init_login(app, tool_name, public=("static",), local_ok=()):
         if signed_in():
             return None
         if request.path.startswith("/api/") or request.accept_mimetypes.best == "application/json":
-            return jsonify({"error": "Please sign in again."}), 401
+            return jsonify({"error": "Please sign in again. · कृपया फिर से साइन इन करें।"}), 401
         return redirect(request.script_root + "/login?next=" + _quote(request.script_root + request.full_path.rstrip("?")))
 
     @app.route("/login", methods=["GET", "POST"], endpoint="idr_login")
@@ -101,7 +101,7 @@ def init_login(app, tool_name, public=("static",), local_ok=()):
                                 secure=request.is_secure, samesite="Lax")
                 return resp
             time.sleep(1)  # slow down password guessing
-            error = "That username or password is not right."
+            error = "That username or password is not right. · यूज़रनेम या पासवर्ड सही नहीं है।"
         return render_template("login.html", tool_name=tool_name, error=error, next=nxt,
                                username=request.form.get("username", "")), (401 if error else 200)
 

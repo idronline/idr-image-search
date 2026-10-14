@@ -241,16 +241,16 @@ def api_search():
                     img_bytes = resp.content
                     source    = f"URL: {url}"
                 else:
-                    return jsonify({"error": f"Could not fetch URL (HTTP {resp.status_code})"}), 400
+                    return jsonify({"error": f"Could not fetch URL (HTTP {resp.status_code}) · लिंक से इमेज नहीं मिल पाई"}), 400
             except requests.RequestException as e:
-                return jsonify({"error": f"Could not fetch URL: {str(e)}"}), 400
+                return jsonify({"error": f"Could not fetch URL: {str(e)} · लिंक से इमेज नहीं मिल पाई"}), 400
 
     if img_bytes is None:
-        return jsonify({"error": "No image provided."}), 400
+        return jsonify({"error": "No image provided. · कोई इमेज नहीं मिली।"}), 400
 
     img = open_image(img_bytes)
     if img is None:
-        return jsonify({"error": "Could not read image. Is it a valid JPG/PNG/WebP?"}), 400
+        return jsonify({"error": "Could not read image. Is it a valid JPG/PNG/WebP? · इमेज पढ़ी नहीं जा सकी। क्या यह सही JPG/PNG/WebP है?"}), 400
 
     # Run both stages
     phash_results = phash_search(img, PHASH_THRESHOLD)

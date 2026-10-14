@@ -6,16 +6,17 @@
   <title>Image Search · IDR Tools</title>
   <link rel="icon" href="https://idronline.org/wp-content/uploads/2021/06/cropped-idr-logo-without-tagline-sm-150x104.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&family=Open+Sans:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&family=Noto+Serif+Devanagari:wght@700&family=Open+Sans:wght@400;600;700&display=swap">
   <link rel="stylesheet" href="{{ url_for('static', filename='idr-tools.css') }}">
   <style>
     /* Image Search only (everything else comes from idr-tools.css) */
-    .status{display:flex;align-items:flex-start;gap:.5rem;font-size:.85rem;color:var(--dark-grey);margin:-.75rem 0 1.5rem}
-    .status-dot{width:.55rem;height:.55rem;border-radius:50%;background:var(--grey);flex:none;margin-top:.4rem}
+    .status{display:flex;align-items:flex-start;gap:.5rem;font-size:.85rem;color:var(--white);margin:1.1rem 0 0}
+    .status .hi{color:var(--white);opacity:.85}
+    .status-dot{width:.55rem;height:.55rem;border-radius:50%;background:var(--grey);flex:none;margin-top:.4rem;box-shadow:0 0 0 2px var(--white)}
     .status-dot.done{background:var(--green)}
     .status-dot.running{background:var(--yellow,#F2B705);animation:pulse 1.5s ease-in-out infinite}
     @keyframes pulse{50%{opacity:.35}}
-    .url-input{width:100%;border:1.5px solid var(--grey);border-radius:10px;padding:.8rem 1rem;font:inherit}
+    .url-input{width:100%;border:1.5px solid var(--grey);border-radius:10px;padding:.8rem 1rem;font:inherit;background:var(--white)}
     .url-input:hover,.url-input:focus{border-color:var(--black);outline:none}
     .preview{width:2.4rem;height:2.4rem;border-radius:8px;object-fit:cover;flex:none}
     .results-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem}
@@ -26,7 +27,7 @@
     .match-body{flex:1;min-width:0}
     .match-title{font-weight:700;line-height:1.35}
     .match-title a{text-decoration:none}
-    .match-title a:hover{color:var(--red)}
+    .match-title a:hover{color:var(--magenta)}
     .match-meta{color:var(--dark-grey);font-size:.82rem;margin:.15rem 0 .4rem}
     .tag{display:inline-block;font-size:.72rem;font-weight:700;border-radius:999px;padding:.12rem .55rem;background:var(--light-grey)}
     .tag.exact{background:var(--green);color:var(--white)}
@@ -34,7 +35,7 @@
     .tag.possible{background:var(--pale-yellow);color:#7a5a00}
     .match-score{text-align:right;flex:none}
     .match-score b{display:block;font-size:1.2rem}
-    .match-score span{font-size:.72rem;color:var(--dark-grey)}
+    .match-score span{display:block;font-size:.72rem;color:var(--dark-grey)}
     .match details{margin-top:.35rem}
     .match details a{margin-left:0}
     @media (max-width:480px){.match-thumb{width:72px;height:56px}}
@@ -42,56 +43,63 @@
 </head>
 <body>
   {% include "_nav.html" %}
-  <main>
-    <h1>Find where an image was used</h1>
+  <header class="hero"><div class="idr-wrap">
+    <h1>Find where an image was used<span class="hi" lang="hi">पता करें कि इमेज कहां इस्तेमाल हुई है</span></h1>
     <p class="lead">Upload an image or paste its link to find IDR articles that use the same or a similar picture,
-      even if it was cropped, resized or edited.</p>
-    <div class="status"><span class="status-dot" id="statusDot"></span><span id="statusText">Checking the image index&hellip;</span></div>
+      even if it was cropped, resized or edited.
+      <span class="hi" lang="hi">इमेज अपलोड करें या उसका लिंक डालें। IDR के वो लेख मिलेंगे जिनमें यही या मिलती-जुलती इमेज है, भले ही वह क्रॉप या एडिट की गई हो।</span></p>
+    <div class="status"><span class="status-dot" id="statusDot"></span><span id="statusText">Checking the image index&hellip;<span class="hi" lang="hi">इमेज इंडेक्स चेक हो रहा है&hellip;</span></span></div>
+  </div></header>
+  <main>
 
     <form class="card" id="searchForm" novalidate>
       <div class="step">
-        <div class="step-label"><span class="num">1</span> How do you want to search?</div>
+        <div class="step-label"><span class="num">1</span><span>How do you want to search?<span class="hi" lang="hi">कैसे सर्च करना है?</span></span></div>
         <div class="toggle">
           <input type="radio" name="mode" id="mode-upload" value="upload" checked>
-          <label for="mode-upload"><b>Upload an image</b><span>From your computer</span></label>
+          <label for="mode-upload"><b>Upload an image</b><span lang="hi">इमेज अपलोड करें</span><span>From your computer</span><span lang="hi">अपने कंप्यूटर से</span></label>
           <input type="radio" name="mode" id="mode-url" value="url">
-          <label for="mode-url"><b>Paste a link</b><span>Address of an image online</span></label>
+          <label for="mode-url"><b>Paste a link</b><span lang="hi">लिंक पेस्ट करें</span><span>Address of an image online</span><span lang="hi">ऑनलाइन इमेज का लिंक</span></label>
         </div>
       </div>
 
       <div class="step" id="panel-upload">
-        <div class="step-label"><span class="num">2</span> Choose the image</div>
+        <div class="step-label"><span class="num">2</span><span>Choose the image<span class="hi" lang="hi">इमेज चुनें</span></span></div>
         <label class="drop">
           <input type="file" name="file" id="fileInput" accept=".jpg,.jpeg,.png,.webp,.gif">
-          <div class="empty"><div class="big">Drop an image here, or click to choose</div>
-            <div class="small">JPG, PNG, WebP or GIF, up to 20 MB.</div></div>
+          <div class="empty"><div class="big">Drop an image here or click to choose
+              <span class="hi" lang="hi">इमेज यहां डालें या क्लिक करके चुनें</span></div>
+            <div class="small">JPG, PNG, WebP or GIF, up to 20 MB · <span lang="hi">JPG, PNG, WebP या GIF, 20 MB तक</span></div></div>
           <div class="chosen"><img class="preview" id="preview" alt=""><span class="file-icon hidden">img</span>
             <div><div class="file-name"></div><div class="small file-size"></div></div>
-            <span class="change">Change</span></div>
+            <span class="change">Change<span class="hi" lang="hi">बदलें</span></span></div>
         </label>
       </div>
 
       <div class="step hidden" id="panel-url">
-        <div class="step-label"><span class="num">2</span> Paste the image link</div>
+        <div class="step-label"><span class="num">2</span><span>Paste the image link<span class="hi" lang="hi">इमेज का लिंक पेस्ट करें</span></span></div>
         <input class="url-input" type="url" name="url" id="urlInput" placeholder="https://idronline.org/wp-content/uploads/&hellip;">
-        <div class="hint">Right-click an image on a web page and choose &ldquo;Copy image address&rdquo;.</div>
+        <div class="hint">Right-click an image and choose &ldquo;Copy image address&rdquo;.
+          <span class="hi" lang="hi">इमेज पर राइट-क्लिक करें और &ldquo;Copy image address&rdquo; चुनें।</span></div>
       </div>
 
-      <button type="submit" class="btn btn-primary" id="searchBtn" disabled>Search</button>
-      <div class="hint submit-hint" id="searchHint">Choose an image to continue.</div>
+      <button type="submit" class="btn btn-primary" id="searchBtn" disabled>Search<span class="hi" lang="hi">सर्च करें</span></button>
+      <div class="hint submit-hint" id="searchHint"></div>
     </form>
 
     <section class="card hidden" id="working">
       <div class="working">
         <div class="spinner"></div>
         <div><b>Searching&hellip;</b> <span class="timer">0:00</span>
-          <div class="hint" style="margin:0">Comparing with every indexed article image. Usually a second or two.</div></div>
+          <span class="hi" lang="hi" style="font-weight:600">सर्च हो रहा है&hellip;</span>
+          <div class="hint" style="margin:0">Usually a second or two. <span lang="hi">आमतौर पर एक-दो सेकंड लगते हैं।</span></div></div>
       </div>
     </section>
 
-    <section class="card hidden" id="results"></section>
+    <section class="card result hidden" id="results"></section>
   </main>
-  <footer>IDR internal tools &middot; Need help? Contact Subhash</footer>
+  <footer>IDR internal tools &middot; Need help? Contact Subhash
+    <span class="hi" lang="hi">IDR के इंटरनल टूल्स · मदद चाहिए? सुभाष से संपर्क करें</span></footer>
 
   <script src="{{ url_for('static', filename='idr-tools.js') }}"></script>
   <script>
@@ -103,12 +111,16 @@
       return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
+    function bi(en, hi) { return esc(en) + '<span class="hi" lang="hi">' + esc(hi) + '</span>'; }
+    var TAG_HI = { 'Exact match': 'हूबहू वही', 'Near match': 'लगभग वही', 'Similar': 'मिलती-जुलती',
+                   'Possible match – please check': 'शायद यही – एक बार जांच लें' };
     function mode() { return document.querySelector('input[name=mode]:checked').value; }
 
     function check() {
       var ok = mode() === 'upload' ? fileInput.files.length > 0 : /^https?:\/\/\S+$/i.test(urlInput.value.trim());
       $('searchBtn').disabled = !ok;
-      $('searchHint').textContent = mode() === 'upload' ? 'Choose an image to continue.' : 'Paste an image link (starting with http) to continue.';
+      $('searchHint').innerHTML = mode() === 'upload' ? bi('Choose an image to continue.', 'आगे बढ़ने के लिए इमेज चुनें।')
+                                                     : bi('Paste an image link (starting with http) to continue.', 'आगे बढ़ने के लिए इमेज का लिंक (http से शुरू) पेस्ट करें।');
       $('searchHint').classList.toggle('hidden', ok);
     }
 
@@ -131,11 +143,11 @@
 
     // ── Index status ──────────────────────────────────────────────────────
     function ago(iso) {
-      if (!iso) return '';
+      if (!iso) return ['', ''];
       var s = Math.floor((Date.now() - new Date(iso + 'Z')) / 1000);
-      if (s < 3600) return Math.max(1, Math.floor(s / 60)) + ' min ago';
-      if (s < 86400) return Math.floor(s / 3600) + ' hours ago';
-      return Math.floor(s / 86400) + ' days ago';
+      if (s < 3600) { var m = Math.max(1, Math.floor(s / 60)); return [m + ' min ago', m + ' मिनट पहले']; }
+      if (s < 86400) { var h = Math.floor(s / 3600); return [h + ' hours ago', h + ' घंटे पहले']; }
+      var d = Math.floor(s / 86400); return [d + ' days ago', d + ' दिन पहले'];
     }
     function pollStatus() {
       fetch('api/status').then(function (r) { return r.json(); }).then(function (d) {
@@ -145,16 +157,20 @@
         indexedTotal = total;
         if (d.is_running) {
           dot.className = 'status-dot running';
-          text.textContent = 'Indexing new images (' + pct + '% done) · searches still work on ' + n + ' images';
+          text.innerHTML = bi('Indexing new images (' + pct + '% done) · searches still work on ' + n + ' images',
+                              'नई इमेज इंडेक्स हो रही हैं (' + pct + '%) · सर्च ' + n + ' इमेज पर चलती रहेगी');
         } else if (total > 0) {
           dot.className = 'status-dot done';
-          text.textContent = n + ' article images indexed · updated ' + ago(d.last_updated_at) +
-            (d.sscd_available ? '' : ' · similar-image search unavailable, exact matches only');
+          var a = ago(d.last_updated_at);
+          text.innerHTML = bi(n + ' article images indexed · updated ' + a[0] +
+                                (d.sscd_available ? '' : ' · similar-image search unavailable, exact matches only'),
+                              n + ' इमेज इंडेक्स हैं · ' + a[1] + ' अपडेट हुआ' +
+                                (d.sscd_available ? '' : ' · अभी सिर्फ़ हूबहू मैच मिलेंगे'));
         } else {
           dot.className = 'status-dot';
-          text.textContent = 'No images indexed yet.';
+          text.innerHTML = bi('No images indexed yet.', 'अभी कोई इमेज इंडेक्स नहीं है।');
         }
-      }).catch(function () { $('statusText').textContent = 'Could not reach the server.'; });
+      }).catch(function () { $('statusText').innerHTML = bi('Could not reach the server.', 'सर्वर से कनेक्ट नहीं हो पाया।'); });
     }
     pollStatus(); setInterval(pollStatus, 30000);
 
@@ -175,27 +191,28 @@
     }
     function show(html) { var r = $('results'); r.innerHTML = html; r.classList.remove('hidden'); r.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
     function error(msg) {
-      show('<div class="done-head"><div class="tick bad">!</div><div><h2>Could not search</h2><p>' + esc(msg) + '</p></div></div>');
+      show('<div class="done-head"><div class="tick bad">!</div><div><h2>' + bi('Could not search', 'सर्च नहीं हो पाया') + '</h2><p>' + esc(msg) + '</p></div></div>');
       $('results').classList.add('error-card');
     }
 
     function tag(r) {
       var cls = r.distance === 0 ? 'exact' : r.match_type === 'Near match' ? 'near' : r.match_type.indexOf('Possible') === 0 ? 'possible' : '';
-      return '<span class="tag ' + cls + '">' + esc(r.match_type) + '</span>';
+      return '<span class="tag ' + cls + '">' + esc(r.match_type) + (TAG_HI[r.match_type] ? ' · <span lang="hi">' + TAG_HI[r.match_type] + '</span>' : '') + '</span>';
     }
     function match(r) {
       var a = r.articles[0] || {}, more = r.articles.slice(1);
       var title = a.permalink ? '<a href="' + esc(a.permalink) + '" target="_blank" rel="noopener">' + esc(a.article_title || '(untitled)') + '</a>'
                               : esc(a.article_title || '(untitled)');
       var meta = [a.csv_source, a.contributor].filter(Boolean).map(esc).join(' &middot; ');
-      var extra = more.length ? '<details><summary>Also used in ' + more.length + ' more article' + (more.length > 1 ? 's' : '') + '</summary>' +
+      var extra = more.length ? '<details><summary>Also used in ' + more.length + ' more article' + (more.length > 1 ? 's' : '') +
+        ' · <span lang="hi">' + more.length + ' और लेखों में भी</span></summary>' +
         more.map(function (m) { return m.permalink ? '<a href="' + esc(m.permalink) + '" target="_blank" rel="noopener">' + esc(m.article_title || m.permalink) + '</a>' : ''; }).join('') +
         '</details>' : '';
       return '<div class="match">' +
         '<a href="' + esc(r.image_url) + '" target="_blank" rel="noopener"><img class="match-thumb" loading="lazy" src="' + esc(r.image_url) + '" alt="" onerror="this.style.visibility=\'hidden\'"></a>' +
         '<div class="match-body"><div class="match-title">' + title + '</div>' +
         (meta ? '<div class="match-meta">' + meta + '</div>' : '') + tag(r) + extra + '</div>' +
-        '<div class="match-score"><b>' + esc(r.similarity) + '%</b><span>similar</span></div></div>';
+        '<div class="match-score"><b>' + esc(r.similarity) + '%</b><span>similar</span><span lang="hi">मिलान</span></div></div>';
     }
 
     form.addEventListener('submit', function (ev) {
@@ -207,20 +224,21 @@
       working(true);
       fetch('api/search', { method: 'POST', body: fd })
         .then(function (resp) {
-          if (resp.status === 413) throw new Error('That image is larger than 20 MB.');
-          if (resp.status === 401) { location.reload(); throw new Error('Please sign in again.'); }
-          return resp.json().then(function (d) { if (!resp.ok) throw new Error(d.error || 'Something went wrong.'); return d; });
+          if (resp.status === 413) throw new Error('That image is larger than 20 MB. · यह इमेज 20 MB से बड़ी है।');
+          if (resp.status === 401) { location.reload(); throw new Error('Please sign in again. · कृपया फिर से साइन इन करें।'); }
+          return resp.json().then(function (d) { if (!resp.ok) throw new Error(d.error || 'Something went wrong. · कुछ गड़बड़ हो गई।'); return d; });
         })
         .then(function (d) {
           if (!d.count) {
-            show('<div class="done-head"><div class="tick" style="background:var(--grey)">&ndash;</div><div><h2>No matches found</h2>' +
-                 '<p>This image does not appear in any of the ' + indexedTotal.toLocaleString() + ' indexed article images.</p></div></div>');
+            show('<div class="done-head"><div class="tick" style="background:var(--grey)">&ndash;</div><div><h2>' + bi('No matches found', 'कोई मैच नहीं मिला') + '</h2>' +
+                 '<p>' + bi('This image does not appear in any of the ' + indexedTotal.toLocaleString() + ' indexed article images.',
+                            'यह इमेज इंडेक्स की गई ' + indexedTotal.toLocaleString() + ' इमेज में से किसी में नहीं मिली।') + '</p></div></div>');
             return;
           }
-          show('<div class="done-head"><div class="tick">&#10003;</div><div><h2>' + d.count + ' match' + (d.count > 1 ? 'es' : '') + ' found</h2>' +
+          show('<div class="done-head"><div class="tick">&#10003;</div><div><h2>' + bi(d.count + ' match' + (d.count > 1 ? 'es' : '') + ' found', d.count + ' मैच मिले') + '</h2>' +
                '<p>' + esc(d.source) + '</p></div></div>' + d.results.map(match).join(''));
         })
-        .catch(function (e) { error(e.message === 'Failed to fetch' ? 'Could not reach the server. Please try again.' : e.message); })
+        .catch(function (e) { error(e.message === 'Failed to fetch' ? 'Could not reach the server. Please try again. · सर्वर से कनेक्ट नहीं हो पाया। फिर से कोशिश करें।' : e.message); })
         .then(function () { working(false); check(); });
     });
     check();
