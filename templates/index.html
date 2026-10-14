@@ -141,7 +141,7 @@
       fetch('api/status').then(function (r) { return r.json(); }).then(function (d) {
         var dot = $('statusDot'), text = $('statusText');
         var pct = Math.min(d.percent_embedded || 0, d.percent_hashed || 0);
-        var total = d.total_indexed || d.total_hashed || 0, n = total.toLocaleString();
+        var total = d.faiss_total || d.total_embedded || d.total_hashed || 0, n = total.toLocaleString();
         indexedTotal = total;
         if (d.is_running) {
           dot.className = 'status-dot running';
