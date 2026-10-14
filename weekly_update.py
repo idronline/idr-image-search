@@ -13,6 +13,7 @@ the ubuntu crontab (Sunday 22:00 India time, see README):
      BACKUP_ENABLED=1 is set (off by default).
   3. Run `indexer.py --embed` (adds only new images: pHash, then SSCD).
   4. Ask the running web app to reload its FAISS index.
+  5. Post the result to Slack (if SLACK_WEBHOOK_URL is set in ~/idr-tools.env).
 
 exports.json holds the export URLs. They contain secret keys, so the file is
 not in git (see exports.example.json) and URLs are never written to the log.
@@ -34,6 +35,8 @@ import sys
 import time
 
 import requests
+
+from db_setup import get_conn
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -133,6 +136,27 @@ def reload_app():
         return False
 
 
+def slack(text):
+    """Post a line to Slack; never let a Slack problem break the update."""
+    url = os.environ.get("SLACK_WEBHOOK_URL")
+    if not url:
+        return
+    try:
+        requests.post(url, json={"text": text}, timeout=15)
+    except requests.RequestException as e:
+        log.warning(f"Slack message failed: {type(e).__name__}")
+
+
+def searchable_images():
+    try:
+        conn = get_conn()
+        n = conn.execute("SELECT COUNT(*) FROM image_embeddings").fetchone()[0]
+        conn.close()
+        return f"{n:,}"
+    except Exception:
+        return "?"
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--no-export", action="store_true", help="skip the exports, index the current CSVs")
@@ -182,9 +206,17 @@ def main():
 
     if failures:
         log.error(f"Weekly update finished with problems: {', '.join(failures)}")
+        slack(f":warning: Image Search weekly update finished with problems: {', '.join(failures)}. "
+              f"{searchable_images()} images searchable. Details: ~/idr-image-search/logs/weekly_update.log")
         sys.exit(1)
     log.info("Weekly update finished OK")
+    slack(f":white_check_mark: Image Search weekly update OK - {searchable_images()} images searchable.")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        # type only: error texts from requests can contain the secret export URLs
+        slack(f":red_circle: Image Search weekly update crashed ({type(e).__name__}). See logs/weekly_update.log")
+        raise

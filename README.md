@@ -227,3 +227,23 @@ the progress bar), or it may have been filtered as a resized variant.
 Check `logs/indexer.log` for skipped URLs.
 
 **App not starting** — Make sure port 5000 is free: `lsof -i :5000`
+
+---
+
+## Deploy and alerts
+
+`deploy/idr-deploy.sh` and `deploy/idr_healthcheck.py` are shared with email_format_tool (same files).
+
+One-command deploy - add once to `~/.bashrc`:
+
+```bash
+alias idr-deploy='bash ~/idr-image-search/deploy/idr-deploy.sh idr-image-search:idr-image-search:5000'
+```
+
+With `SLACK_WEBHOOK_URL=...` in `~/idr-tools.env` (never in git), the weekly update posts its
+result to Slack, and this cron line (`crontab -e`) checks Image Search, this server's disk
+and that the tools server is up, every 15 minutes:
+
+```
+*/15 * * * * set -a; . $HOME/idr-tools.env; set +a; python3 $HOME/idr-image-search/deploy/idr_healthcheck.py "Image Search (local)=http://127.0.0.1:5000/login" "Tools server=https://tools.idronline.org/translate/login" >> $HOME/idr-health.log 2>&1
+```
