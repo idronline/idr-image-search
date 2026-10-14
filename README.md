@@ -26,7 +26,8 @@ Only code is in git. These live on the server only (see `.gitignore`):
 as in the Translate, Audio and Email Collector repos. Change them in all four.
 Set `APP_USERNAME`, `APP_PASSWORD` and `SECRET_KEY` in the environment to require the shared
 IDR tools login page (`idr_login.py`, off when unset). In production the app listens on
-127.0.0.1 (`BIND_HOST`) behind nginx at `https://api.idronline.org/image-search/`
+127.0.0.1 (`BIND_HOST`) behind nginx at `https://api.idronline.org/image-search/`; people use it through
+`https://tools.idronline.org/image-search/` (the tools server only passes requests on), so one sign-in covers all tools
 (`deploy/nginx-image-search.conf`).
 
 ---

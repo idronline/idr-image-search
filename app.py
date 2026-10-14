@@ -32,7 +32,7 @@ NAV_TOOLS = [
     ("Translate", "https://tools.idronline.org/translate/"),
     ("Audio", "https://tools.idronline.org/audio/"),
     ("Email Collector", "https://tools.idronline.org/emails/"),
-    ("Image Search", "https://api.idronline.org/image-search/"),
+    ("Image Search", "https://tools.idronline.org/image-search/"),
 ]
 
 
